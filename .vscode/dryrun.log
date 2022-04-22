@@ -1,0 +1,7 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/igor/igor/projetos/cachecall'
+for makefile_file in  Makefile; do \
+	grep -E '^[a-zA-Z_-]+:.*?##' $makefile_file | sort | awk 'BEGIN {FS = ":.*?##"}; {printf "\033[36m%-30s\033[0m %s\n", $1, $2}'; \
+done
+make: Leaving directory '/home/igor/igor/projetos/cachecall'
+ 

@@ -3,9 +3,10 @@ export VIRTUAL_ENV := $(PWD)/.venv
 export PROJECT_NAME := cachecall
 export PYTHONPATH := ${PROJECT_NAME}
 
+PYPIRC=$(HOME)/.pypirc
 COLOR="\033[36m%-30s\033[0m %s\n"
 
-.PHONY: deploy .env .venv
+.PHONY: deploy .env .venv build
 .DEFAULT_GOAL := help
 
 .env:
@@ -29,7 +30,7 @@ install-dev: .venv .env .install-hook ## Create .venv and install dev dependenci
 reinstall-dev: .rm-venv install-dev ## Remove .venv if exists, create a new .venv and install dev dependencies.
 
 clean: ## Clean all caches file.
-	@rm -rf dependencies .pytest_cache .coverage .aws-sam
+	@rm -rf dependencies .pytest_cache .coverage .aws-sam dist
 	@find $(PROJECT_PATH) -name __pycache__ | xargs rm -rf
 	@find tests -name __pycache__ | xargs rm -rf
 
@@ -48,13 +49,29 @@ test:  ## Execute all unity tests.
 
 tests: test  ## Execute all unity tests.
 
-testp: ## Execute all tests in parallel
+testp: ## Execute all tests in parallel.
 	@echo "Run pytest xdist..."
 	@pytest -n 4
 	@echo "Run pytest parallel..."
 	@pytest --workers auto
 
-testsp: testp ## Execute all tests in parallel
+testsp: testp ## Execute all tests in parallel.
+
+build: ## Build package.
+	@rm -rf build/ dist/ $(PROJECT_NAME).egg-info/
+	@python -m build --wheel
+	@echo "Twine check..."
+	@twine check dist/*
+
+publish: build ## Build package and publish to PyPi.
+	@if [ ! -f $(PYPIRC) ]; then \
+		echo "$(PYPIRC) not found. Please, create '$(HOME)/.pypirc' file with following content:"; \
+		printf "\n[pypi]\nusername = __token__\npassword = <PyPI token>\n\n"; \
+		exit 1; \
+	fi
+	@echo "Upload to Pypi..."
+	@twine upload dist/*
+	@rm -rf build/ dist/ $(PROJECT_NAME).egg-info/
 
 help: ## Show documentation.
 	@for makefile_file in $(MAKEFILE_LIST); do \

@@ -1,1 +1,0 @@
-{"buildTargets":["clean","coverage","deploy","format","help","install-dev","lint","make","reinstall-dev","test","testp","tests","testsp"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}

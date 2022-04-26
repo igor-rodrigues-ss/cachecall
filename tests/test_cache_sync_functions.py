@@ -8,7 +8,7 @@ class TestCacheInSyncFunctions:
         expected_result = 10
         m_inner_func.return_value = expected_result
 
-        @cache(max_size=1)
+        @cache(max_size_call=1)
         def func():
             return m_inner_func()
 
@@ -47,7 +47,7 @@ class TestCacheInSyncFunctions:
         expected_result = [10, 20]
         m_inner_func.side_effect = expected_result
 
-        @cache(max_size=1)
+        @cache(max_size_call=1)
         def func(*args):
             return m_inner_func()
 

@@ -19,6 +19,17 @@ def get_hms_to_expire():
     return now.hour, minute, second
 
 
+class MockDatetime:
+    def __init__(self, now) -> None:
+        self._now = now
+
+    def now(self):
+        return self._now
+
+    def __call__(self, *args, **kwargs):
+        return datetime(*args, **kwargs)
+
+
 def run_async(coro):
     return LOOP.run_until_complete(coro)
 

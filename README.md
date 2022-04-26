@@ -17,8 +17,11 @@ A cache library for sync and async functions with ttl and expiration time.
     - [Cache group](#cache-group)
     - [Clean cache group](#clean-cache-group)
     - [Keep cache ignoring some keys](#keep-cache-ignoring-some-keys)
+    - [Cache with memory max size](#cache-with-memory-max-size)
+    - [Access cache object](#access-cache-object)
 - [Documentation](#documentation)
     - [Cache decorator](#cache-decorator)
+    - [Cache object](#cache-object)
     - [Expire Time class](#expire-time-class)
 
 ### Algorithm
@@ -62,7 +65,7 @@ await afunc()
 ```python
 from cachecall import cache
 
-@cache(max_size=2)
+@cache(max_size_call=2)
 def func(x):
     print("call")
     return x
@@ -99,7 +102,13 @@ def func(a=None):
 
 - Every day at 10:15:20 the value cached will expire.
 - If the ```ExpireTime(10, 15, 20)``` will defined before 10:15:20 in current day, the the data cached will expired in same day, but if ExpireTime will defined after the 10:15:20, the cached value will be expired in next day.
+- You can expire cache in several specific hours using a tuple of several ExpireTime.
 
+```python
+@cache(expire_time=(ExpireTime(6, 0, 0), ExpireTime(12, 0, 0), ExpireTime(18, 0, 0),))
+def func(a):
+    ...
+```
 
 ##### TTL with Expire Time
 
@@ -162,6 +171,44 @@ func(2, y=12345) # Add new data in cache
 - When some parameter is defined in ignore keys tuple these parameter value is ignored in cache creation, and even though the value of this parameter is changed the data will be kept cached.
 - Currently this feature only works if the ignored parameters are used as named arguments.  
 
+#### Cache with memory max size
+```python
+from cachecall import cache, kb
+fake_lg1 = ''.join([str(val) for val in range(500)]) # sizeof: 1439 bytes
+fake_lg2 = '-'.join([str(val) for val in range(400)]) # sizeof: 1538 bytes
+
+@cache(max_size_mem=kb(2)) # defining a limit of usage memory for 2 kilobytes (2048 bytes)
+def func(param):
+    print("call")
+
+    if param == "a":
+        return fake_lg1
+
+    return fake_lg2
+
+func("a") # Add fake_lg1 in cache
+func("a") # Using cache
+func("b") # Remove fake_lg1 from cache because of memory limit 2048 bytes and add fake_lg2
+```
+
+#### Access cache object
+
+```python
+from cachecall import cache
+
+@cache()
+def func(x):
+    print('call')
+    return x
+
+func(1) # add in cache
+func(1) # Use cached data
+func(2) # add in cache
+
+# Access cached data
+func.cache.data # Cached data
+```
+- See more about [cache object](#cache-object).
 
 ### Documentation
 
@@ -172,7 +219,7 @@ from cachecall import cache
 ```
 
 ##### Parameters
-- max_size: *Optional[int]*
+- max_size_call: *Optional[int]*
     - Number of values (or call to cached function) that will be stored in cache.
     - If None the cache size will be unlimited.
     - Default value is None.
@@ -188,8 +235,9 @@ from cachecall import cache
     - If None the value never expires.
     - Default value is None.
 
-- expire_time: *Optional[ExpireTime]*
+- expire_time: *Optional[Union[ExpireTime, Tuple[ExpireTime]]]*
     - Specific time to expire a cached value daily.
+    - You can use a tuple (or list) of ```ExpireTime``` objects for defining several specific times to expire data.
     - If None the value never expires.
     - Default value is None.
 
@@ -202,7 +250,29 @@ from cachecall import cache
 
         - The ```ignore_keys``` have be used if your cached function (function decorated by *cachecall.cache* decorator) has at least two parameters or more, because, if your function has only one parameter and this parameter is defined in ignore_keys, that means that your function will cache data normally because the only defined parameter will be ignored. Therefore, using ```ignore_keys``` for cached functions with only one defined parameter and this only parameter name passed as value in *ignore_keys* will have no effect and the data will be cached normally.
 
-        - This behavior also will occur if you have many parameters and all parameters names are passed to ```ignore_keys```. 
+        - This behavior also will occur if you have many parameters and all parameters names are passed to ```ignore_keys```.
+
+- log_level: *Optional[Union[int, str]]*
+    - This parameter is useful for you to see some behaviors that's occurring in data caching.
+    - Default value is ```logging.WARNING```.
+
+- max_size_mem: *Optional[Union[int, float]]*
+    - Define a limit of memory usage in bytes for each cache group. All cached data always have a memory size less or equal to the value defined in max_size_mem.
+    - If a unique data has a size memory greater than the value defined in ```max_size_mem``` this value will not be cached. This operation will be logged as debug level.
+    - Default value is None. Thats mean that no exists memory limit for cache group.
+    - Functions for control cache unity:
+        - ```from cachecall import kb, mb, gb```
+        - ```kb(val)```: return the ```val``` value converted to bytes. For example: ```kb(1) = 1024```.
+        - ```mb(val)```: return the ```val``` value converted to bytes. For example: ```mb(1) = 1048576```.
+        - ```gb(val)```: return the ```val``` value converted to bytes. For example: ```gb(1) = 1073741824```.
+
+
+#### Cache object
+
+- This object is used to control the cache data.
+- Each cached function will have a cache object.
+- The goal in adding this method in the cached function is for debug purposes using ```func.cache.data```.
+- We recommend strongly that you won't handle any operation using this method so you do not cause any unexpected error.
 
 #### Expire Time class
 ```python

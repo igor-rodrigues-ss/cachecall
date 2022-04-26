@@ -1,8 +1,7 @@
 from uuid import uuid4
 from unittest.mock import Mock
 
-from cachecall.cache import clear_cache
-from cachecall import cache
+from cachecall import cache, clear_cache
 
 
 class TestCacheGroup:

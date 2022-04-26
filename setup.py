@@ -7,14 +7,14 @@ with open("README.md") as f:
 
 setup(
     name="cachecall",
-    version="0.0.2",
+    version="0.1.0",
     description="A cache library for sync and async functions with ttl and expiration time.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/igor-rodrigues-ss/cachecall",
     author="Igor Rodrigues Sousa Silva",
     author_email="igor.rodrigues.ss98@gmail.com",
-    keywords="cache caching cachecall cached",
+    keywords="cache caching cachecall cached cache-memory",
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",

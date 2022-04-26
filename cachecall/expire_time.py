@@ -1,5 +1,5 @@
+import datetime
 from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass
@@ -9,8 +9,8 @@ class ExpireTime:
     second: int
 
     def future_date(self):
-        now = datetime.now()
-        target_date = datetime(
+        now = datetime.datetime.now()
+        target_date = datetime.datetime(
             year=now.year,
             month=now.month,
             day=now.day,
